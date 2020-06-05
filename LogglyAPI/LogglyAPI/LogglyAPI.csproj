@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<Authors>IFalcao</Authors>
+		<Description>Loggly API wrapper for easier interaction</Description>
+		<PackageProjectUrl>https://github.com/iFalcao/LogglyAPI</PackageProjectUrl>
+		<PackageTags>loggly log logger api</PackageTags>
+		<RepositoryUrl>https://github.com/iFalcao/LogglyAPI</RepositoryUrl>
+		<RepositoryType>ifalcao.LogglyAPI</RepositoryType>
+		<PackageReleaseNotes>--</PackageReleaseNotes>
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<Version>0.0.1--alpha</Version>
+	</PropertyGroup>
+
+
+	<ItemGroup>
+    <PackageReference Include="Kinvo.Utilities" Version="1.6.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+</Project>

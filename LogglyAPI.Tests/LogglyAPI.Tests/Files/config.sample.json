@@ -1,0 +1,5 @@
+{
+  "Account": "YOUR_LOGGLY_ACCOUNT_HERE",
+  "Username": "YOUR_LOGGLY_USERNAME_HERE",
+  "Password": "YOUR_LOGGLY_PASSWORD_HERE"
+}

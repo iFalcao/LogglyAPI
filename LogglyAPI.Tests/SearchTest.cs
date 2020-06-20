@@ -11,10 +11,10 @@ namespace LogglyAPI.Tests
             var response = await _logglyClient.Search("*");
 
             response.Should().NotBeNull();
-            response.Id.Should().BePositive();
-            response.ElapsedTime.Should().BePositive();
-            response.Status.Length.Should().BePositive();
-            response.DateFrom.Should().BeBefore(response.DateTo);
+            response.RSID.Id.Should().BePositive();
+            response.RSID.ElapsedTime.Should().BePositive();
+            response.RSID.Status.Length.Should().BePositive();
+            response.RSID.DateFrom.Should().BeBefore(response.RSID.DateTo);
         }
     }
 }

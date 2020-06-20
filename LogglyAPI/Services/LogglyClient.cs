@@ -41,8 +41,8 @@ namespace LogglyAPI.Services
                 using (var webClient = GetConfiguredWebClient())
                 {
                     var json = await webClient.DownloadStringTaskAsync(requestUrl);
-                    var jsonObject = new { rsid = (SearchResult)null };
-                    return JsonConvert.DeserializeAnonymousType(json, jsonObject).rsid;
+                    var searchResult = JsonConvert.DeserializeObject<SearchResult>(json);
+                    return searchResult;
                 }
             }
             catch (WebException webException)
@@ -58,9 +58,9 @@ namespace LogglyAPI.Services
             }
         }
 
-        public async Task<IEnumerable<T>> GetRawEvents<T>(long searchId, int page = 0)
+        public async Task<IEnumerable<T>> GetRawEventsByRsid<T>(long rsidId, int page = 0)
         {
-            var requestUrl = BaseUrl + $"/events?rsid={searchId}&page={page}&format=raw";
+            var requestUrl = BaseUrl + $"/events?rsid={rsidId}&page={page}&format=raw";
 
             using (var webClient = GetConfiguredWebClient())
             {
@@ -71,9 +71,9 @@ namespace LogglyAPI.Services
             }
         }
 
-        public async Task<EventsResult> GetEvents(long searchId, int page = 0)
+        public async Task<EventsResult> GetEventsByRsid(long rsidId, int page = 0)
         {
-            var requestUrl = BaseUrl + $"/events?rsid={searchId}&page={page}";
+            var requestUrl = BaseUrl + $"/events?rsid={rsidId}&page={page}";
 
             using (var webClient = GetConfiguredWebClient())
             {

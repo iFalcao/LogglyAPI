@@ -10,7 +10,7 @@ namespace LogglyAPI.Tests
         public async void GetEventsReturnsPopulatedObject()
         {
             var searchResult = await _logglyClient.Search("*");
-            var eventsResult = await _logglyClient.GetEvents(searchResult.Id);
+            var eventsResult = await _logglyClient.GetEventsByRsid(searchResult.RSID.Id);
 
             eventsResult.Should().NotBeNull();
             eventsResult.TotalEvents.Should().BePositive();
@@ -22,7 +22,7 @@ namespace LogglyAPI.Tests
         public async void GetRawEventsReturnPopulatedObjectList()
         {
             var searchResult = await _logglyClient.Search("*");
-            var eventsResult = await _logglyClient.GetRawEvents<object>(searchResult.Id);
+            var eventsResult = await _logglyClient.GetRawEventsByRsid<object>(searchResult.RSID.Id);
 
             eventsResult.Should().NotBeNull();
             eventsResult.Count().Should().Be(50);

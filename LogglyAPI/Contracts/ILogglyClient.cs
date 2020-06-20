@@ -25,10 +25,21 @@ namespace LogglyAPI.Contracts
             SearchOrder? order = SearchOrder.DESC,
             int? size = 50);
 
+        /// <summary>
+        /// Retrieve the event result object from a specified rsid.
+        /// </summary>
+        /// <param name="rsidId">The rsid id that can be retrieved in the search method</param>
+        /// <param name="page">The page number. Defaults to 0</param>
+        /// <returns>The Event endpoint result object</returns>
+        Task<EventsResult> GetEventsByRsid(long rsidId, int page = 0);
 
-
-        Task<EventsResult> GetEvents(long searchId, int page = 0);
-
-        Task<IEnumerable<T>> GetRawEvents<T>(long searchId, int page = 0);
+        /// <summary>
+        /// Retrieve the list of events from a rsid and convert them to the specified type.
+        /// </summary>
+        /// <typeparam name="T">Type that the Events will be converted to</typeparam>
+        /// <param name="rsidId">The rsid id that can be retrieved in the search method</param>
+        /// <param name="page">The page number. Defaults to 0</param>
+        /// <returns>List of converted events</returns>
+        Task<IEnumerable<T>> GetRawEventsByRsid<T>(long rsidId, int page = 0);
     }
 }

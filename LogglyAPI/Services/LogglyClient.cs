@@ -1,9 +1,12 @@
 ﻿using Kinvo.Utilities.Extensions;
+using LogglyAPI.Configuration;
 using LogglyAPI.Contracts;
 using LogglyAPI.Errors;
+using LogglyAPI.Helpers;
 using LogglyAPI.Models;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,22 +20,11 @@ namespace LogglyAPI.Services
 
         public LogglyClient(LogglyConfig config)
         {
-            this._config = config;
+            _config = config;
 
-            this.BaseUrl = $"https://{this._config.Account}.loggly.com/apiv2";
+            BaseUrl = $"https://{_config.Account}.loggly.com/apiv2";
         }
 
-        /// <summary>
-        /// Creates a query for Loggly's search endpoint with the specified query string and date parameters
-        /// </summary>
-        /// <param name="queryString">query that will be applied to the Loggly API, follows: https://documentation.solarwinds.com/en/Success_Center/loggly/Content/admin/search-query-language.htm</param></param>
-        /// <param name="from">Defaults to 24h ago</param>
-        /// <param name="until">Defaults to now</param>
-        /// <param name="order">Order results either as DESC or ASC. Defaults to: DESC</param>
-        /// <param name="size">Amount of logs returned. Defaults to: 50</param>
-        /// <returns>The search object with a RSID that can be used on the Event's endpoint</returns>
-        /// <exception cref="RateLimitException">You've reached the API requests limit</exception>
-        /// <exception cref="TimeoutException">Loggly couldn't handle the request in time, you need to retry the search</exception>
         public async Task<SearchResult> Search(
             string queryString,
             DateParameter from = null,
@@ -42,11 +34,11 @@ namespace LogglyAPI.Services
         {
             from = from ?? DateParameter.DEFAULT_FROM;
             until = until ?? DateParameter.DEFAULT_UNTIL;
-            var requestUrl = this.GenerateRequestUrl(queryString, from.Query, until.Query, order.Value, size.Value);
+            var requestUrl = GenerateRequestUrl(queryString, from.Query, until.Query, order.Value, size.Value);
 
             try
             {
-                using (var webClient = this.GetConfiguredWebClient())
+                using (var webClient = GetConfiguredWebClient())
                 {
                     var json = await webClient.DownloadStringTaskAsync(requestUrl);
                     var jsonObject = new { rsid = (SearchResult)null };
@@ -66,6 +58,30 @@ namespace LogglyAPI.Services
             }
         }
 
+        public async Task<IEnumerable<T>> GetRawEvents<T>(long searchId, int page = 0)
+        {
+            var requestUrl = BaseUrl + $"/events?rsid={searchId}&page={page}&format=raw";
+
+            using (var webClient = GetConfiguredWebClient())
+            {
+                var json = await webClient.DownloadStringTaskAsync(requestUrl);
+                var eventsResult = JsonConvert.DeserializeObject<List<T>>(json);
+                return eventsResult;
+            }
+        }
+
+        public async Task<EventsResult> GetEvents(long searchId, int page = 0)
+        {
+            var requestUrl = BaseUrl + $"/events?rsid={searchId}&page={page}";
+
+            using (var webClient = GetConfiguredWebClient())
+            {
+                var json = await webClient.DownloadStringTaskAsync(requestUrl);
+                var eventsResult = JsonConvert.DeserializeObject<EventsResult>(json);
+                return eventsResult;
+            }
+        }
+
         #region Private methods
 
         private string GenerateRequestUrl(
@@ -75,7 +91,7 @@ namespace LogglyAPI.Services
             SearchOrder order = SearchOrder.DESC,
             int size = 50)
         {
-            var requestUrl = this.BaseUrl + $"/search?{queryString}";
+            var requestUrl = BaseUrl + $"/search?{queryString}";
             requestUrl += $"&from={from}";
             requestUrl += $"&until={until}";
             requestUrl += $"&order={order.GetDescription()}";
@@ -87,7 +103,7 @@ namespace LogglyAPI.Services
         private WebClient GetConfiguredWebClient()
         {
             var webClient = new WebClient();
-            var authString = $"{this._config.Username}:{this._config.Password}";
+            var authString = $"{_config.Username}:{_config.Password}";
             authString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authString));
             webClient.Headers.Add("Authorization", $"Basic {authString}");
             return webClient;

@@ -1,6 +1,7 @@
 ﻿using LogglyAPI.Converters;
 using Newtonsoft.Json;
 using System;
+using System.ComponentModel;
 
 namespace LogglyAPI.Models
 {
@@ -22,5 +23,13 @@ namespace LogglyAPI.Models
         [JsonProperty("date_to")]
         [JsonConverter(typeof(EpochToDateTimeJsonConverter))]
         public DateTime DateTo { get; set; }
+    }
+
+    public enum SearchOrder
+    {
+        [Description("desc")]
+        DESC,
+        [Description("asc")]
+        ASC
     }
 }

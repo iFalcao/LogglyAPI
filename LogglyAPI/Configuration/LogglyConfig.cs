@@ -1,4 +1,4 @@
-﻿namespace LogglyAPI.Models
+﻿namespace LogglyAPI.Configuration
 {
     public class LogglyConfig
     {

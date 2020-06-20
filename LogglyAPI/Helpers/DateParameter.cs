@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LogglyAPI.Models
+namespace LogglyAPI.Helpers
 {
     public class DateParameter
     {

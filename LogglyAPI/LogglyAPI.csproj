@@ -8,9 +8,11 @@
 		<PackageTags>loggly log logger api</PackageTags>
 		<RepositoryUrl>https://github.com/iFalcao/LogglyAPI</RepositoryUrl>
 		<RepositoryType>ifalcao.LogglyAPI</RepositoryType>
-		<PackageReleaseNotes>--</PackageReleaseNotes>
+		<PackageReleaseNotes>Initial version</PackageReleaseNotes>
 		<AssemblyVersion>1.0.0.0</AssemblyVersion>
 		<Version>0.0.1--alpha</Version>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
 
 

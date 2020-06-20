@@ -1,5 +1,6 @@
 ﻿using Kinvo.Utilities.Extensions;
 using LogglyAPI.Contracts;
+using LogglyAPI.Errors;
 using LogglyAPI.Models;
 using Newtonsoft.Json;
 using System;
@@ -11,27 +12,27 @@ namespace LogglyAPI.Services
 {
     public class LogglyClient : ILogglyClient
     {
+        private readonly LogglyConfig _config;
         private readonly string BaseUrl;
-        public readonly string UserName;
-        public readonly string Password;
-        public readonly string Account;
 
         public LogglyClient(LogglyConfig config)
         {
-            this.UserName = config.Username;
-            this.Password = config.Password;
-            this.Account = config.Account;
+            this._config = config;
 
-            this.BaseUrl = $"https://{this.Account}.loggly.com/apiv2";
+            this.BaseUrl = $"https://{this._config.Account}.loggly.com/apiv2";
         }
 
-        public async Task<SearchResult> Search(string queryString)
-        {
-            return await this.Search(queryString,
-                                     DateParameter.DEFAULT_FROM,
-                                     DateParameter.DEFAULT_UNTIL);
-        }
-
+        /// <summary>
+        /// Creates a query for Loggly's search endpoint with the specified query string and date parameters
+        /// </summary>
+        /// <param name="queryString">query that will be applied to the Loggly API, follows: https://documentation.solarwinds.com/en/Success_Center/loggly/Content/admin/search-query-language.htm</param></param>
+        /// <param name="from">Defaults to 24h ago</param>
+        /// <param name="until">Defaults to now</param>
+        /// <param name="order">Order results either as DESC or ASC. Defaults to: DESC</param>
+        /// <param name="size">Amount of logs returned. Defaults to: 50</param>
+        /// <returns>The search object with a RSID that can be used on the Event's endpoint</returns>
+        /// <exception cref="RateLimitException">You've reached the API requests limit</exception>
+        /// <exception cref="TimeoutException">Loggly couldn't handle the request in time, you need to retry the search</exception>
         public async Task<SearchResult> Search(
             string queryString,
             DateParameter from = null,
@@ -41,22 +42,27 @@ namespace LogglyAPI.Services
         {
             from = from ?? DateParameter.DEFAULT_FROM;
             until = until ?? DateParameter.DEFAULT_UNTIL;
-            return await this.Search(queryString, from.Query, until.Query, order, size);
-        }
+            var requestUrl = this.GenerateRequestUrl(queryString, from.Query, until.Query, order.Value, size.Value);
 
-        public async Task<SearchResult> Search(
-            string queryString,
-            string from = "-24h",
-            string until = "now",
-            SearchOrder? order = SearchOrder.DESC,
-            int? size = 50)
-        {
-            var requestUrl = this.GenerateRequestUrl(queryString, from, until, order.Value, size.Value);
-            using (var webClient = this.GetConfiguredWebClient())
+            try
             {
-                var json = await webClient.DownloadStringTaskAsync(requestUrl);
-                var jsonObject = new { rsid = (SearchResult)null };
-                return JsonConvert.DeserializeAnonymousType(json, jsonObject).rsid;
+                using (var webClient = this.GetConfiguredWebClient())
+                {
+                    var json = await webClient.DownloadStringTaskAsync(requestUrl);
+                    var jsonObject = new { rsid = (SearchResult)null };
+                    return JsonConvert.DeserializeAnonymousType(json, jsonObject).rsid;
+                }
+            }
+            catch (WebException webException)
+            {
+                var statusCode = (webException.Response as HttpWebResponse).StatusCode;
+
+                if (statusCode == HttpStatusCode.ServiceUnavailable)
+                    throw new RateLimitException();
+                if (statusCode == HttpStatusCode.InternalServerError || statusCode == HttpStatusCode.GatewayTimeout)
+                    throw new TimeoutException();
+
+                throw;
             }
         }
 
@@ -81,8 +87,8 @@ namespace LogglyAPI.Services
         private WebClient GetConfiguredWebClient()
         {
             var webClient = new WebClient();
-            var authString = $"{this.UserName}:{this.Password}";
-            authString = Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(authString));
+            var authString = $"{this._config.Username}:{this._config.Password}";
+            authString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authString));
             webClient.Headers.Add("Authorization", $"Basic {authString}");
             return webClient;
         }

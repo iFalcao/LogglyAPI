@@ -64,7 +64,8 @@ namespace LogglyAPI.Services
 
             using (var webClient = GetConfiguredWebClient())
             {
-                var json = await webClient.DownloadStringTaskAsync(requestUrl);
+                var rawText = await webClient.DownloadStringTaskAsync(requestUrl);
+                var json = this.FixRawEventsText(rawText);
                 var eventsResult = JsonConvert.DeserializeObject<List<T>>(json);
                 return eventsResult;
             }
@@ -83,6 +84,12 @@ namespace LogglyAPI.Services
         }
 
         #region Private methods
+
+        private string FixRawEventsText(string rawText)
+        {
+            var fixedJsonResponse = $"[{rawText}]";
+            return fixedJsonResponse.Replace("\n", ", ");
+        }
 
         private string GenerateRequestUrl(
             string queryString,

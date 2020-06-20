@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using LogglyAPI.Converters;
+using Newtonsoft.Json;
+using System;
 
 namespace LogglyAPI.Models
 {
@@ -14,9 +16,11 @@ namespace LogglyAPI.Models
         public decimal ElapsedTime { get; set; }
         
         [JsonProperty("date_from")]
-        public long DateFrom { get; set; }
+        [JsonConverter(typeof(EpochToDateTimeJsonConverter))]
+        public DateTime DateFrom { get; set; }
         
         [JsonProperty("date_to")]
-        public long DateTo { get; set; }
+        [JsonConverter(typeof(EpochToDateTimeJsonConverter))]
+        public DateTime DateTo { get; set; }
     }
 }

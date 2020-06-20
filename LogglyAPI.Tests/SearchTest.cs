@@ -1,4 +1,5 @@
-﻿using LogglyAPI.Services;
+﻿using FluentAssertions;
+using LogglyAPI.Services;
 using Xunit;
 
 namespace LogglyAPI.Tests
@@ -10,12 +11,12 @@ namespace LogglyAPI.Tests
         {
             var logglyClient = new LogglyClient(_logglyConfig);
             var response = await logglyClient.Search("*");
-            Assert.NotNull(response);
-            Assert.InRange(response.Id, 1, long.MaxValue);
-            Assert.InRange(response.DateFrom, 1, long.MaxValue);
-            Assert.InRange(response.DateTo, 1, long.MaxValue);
-            Assert.InRange(response.ElapsedTime, 0.00000000000000001M, decimal.MaxValue);
-            Assert.True(response.Status.Length > 0);
+
+            response.Should().NotBeNull();
+            response.Id.Should().BePositive();
+            response.ElapsedTime.Should().BePositive();
+            response.Status.Length.Should().BeGreaterThan(0);
+            response.DateFrom.Should().BeBefore(response.DateTo);
         }
     }
 }

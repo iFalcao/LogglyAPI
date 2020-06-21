@@ -30,11 +30,12 @@ namespace LogglyAPI.Services
             DateParameter from = null,
             DateParameter until = null,
             SearchOrder? order = SearchOrder.DESC,
-            int? size = 50)
+            int? pageSize = 50)
         {
             from = from ?? DateParameter.DEFAULT_FROM;
             until = until ?? DateParameter.DEFAULT_UNTIL;
-            var requestUrl = GenerateRequestUrl(queryString, from.Query, until.Query, order.Value, size.Value);
+            var requestParameters = GenerateRequestParameters(queryString, from.Query, until.Query, order.Value, pageSize.Value);
+            var requestUrl = this.BaseUrl + $"/search{requestParameters}";
 
             try
             {
@@ -83,6 +84,27 @@ namespace LogglyAPI.Services
             }
         }
 
+        public async Task<EventsIteratorResult> GetEventsIterator(
+            string queryString,
+            DateParameter from = null,
+            DateParameter until = null,
+            SearchOrder? order = SearchOrder.DESC,
+            int? pageSize = 50)
+        {
+            if (pageSize > 1000)
+                throw new ArgumentException("Page size must be less than 1000");
+
+            var requestParameters = GenerateRequestParameters(queryString, from.Query, until.Query, order.Value, pageSize.Value);
+            var requestUrl = this.BaseUrl + $"/events/iterate{requestParameters}";
+
+            using (var webClient = GetConfiguredWebClient())
+            {
+                var json = await webClient.DownloadStringTaskAsync(requestUrl);
+                var eventsIteratorResult = JsonConvert.DeserializeObject<EventsIteratorResult>(json);
+                return eventsIteratorResult;
+            }
+        }
+
         #region Private methods
 
         private string FixRawEventsText(string rawText)
@@ -91,20 +113,20 @@ namespace LogglyAPI.Services
             return fixedJsonResponse.Replace("\n", ", ");
         }
 
-        private string GenerateRequestUrl(
+        private string GenerateRequestParameters(
             string queryString,
             string from,
             string until,
             SearchOrder order = SearchOrder.DESC,
             int size = 50)
         {
-            var requestUrl = BaseUrl + $"/search?{queryString}";
-            requestUrl += $"&from={from}";
-            requestUrl += $"&until={until}";
-            requestUrl += $"&order={order.GetDescription()}";
-            requestUrl += $"&size={size}";
+            var requestParameters = $"?q={queryString}";
+            requestParameters += $"&from={from}";
+            requestParameters += $"&until={until}";
+            requestParameters += $"&order={order.GetDescription()}";
+            requestParameters += $"&size={size}";
 
-            return requestUrl;
+            return requestParameters;
         }
 
         private WebClient GetConfiguredWebClient()

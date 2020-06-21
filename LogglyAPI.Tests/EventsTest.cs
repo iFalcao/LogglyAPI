@@ -1,5 +1,8 @@
 ﻿using FluentAssertions;
+using LogglyAPI.Helpers;
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace LogglyAPI.Tests
@@ -26,6 +29,49 @@ namespace LogglyAPI.Tests
 
             eventsResult.Should().NotBeNull();
             eventsResult.Count().Should().Be(50);
+        }
+
+        [Fact]
+        public void EventsIteratorPageSizeInvalidValueThrowsException()
+        {
+            Func<Task> getEventsIteratorAction = async () =>
+            {
+                await _logglyClient.GetEventsIterator(
+                    "*",
+                    from: DateParameter.FromTimeInterval(TimeInterval.Minutes, 5),
+                    until: DateParameter.DEFAULT_UNTIL,
+                    pageSize: 1001);
+            };
+
+            getEventsIteratorAction.Should().Throw<ArgumentException>();
+        }
+
+        [Fact]
+        public async void EventsIteratorReturnsPopulatedObjectWithoutNextPageUrl()
+        {
+            var eventsIterator = await _logglyClient.GetEventsIterator(
+                "*",
+                from: DateParameter.FromTimeInterval(TimeInterval.Minutes, 2),
+                until: DateParameter.DEFAULT_UNTIL,
+                pageSize: 1000);
+
+            eventsIterator.Should().NotBeNull();
+            eventsIterator.NextPageUrl.Should().BeNull();
+            eventsIterator.Events.Count().Should().BePositive();
+        }
+
+        [Fact]
+        public async void EventsIteratorReturnsPopulatedObject()
+        {
+            var eventsIterator = await _logglyClient.GetEventsIterator(
+                "*",
+                from: DateParameter.FromTimeInterval(TimeInterval.Days, 2),
+                until: DateParameter.DEFAULT_UNTIL,
+                pageSize: 1);
+
+            eventsIterator.Should().NotBeNull();
+            eventsIterator.NextPageUrl.Should().NotBeNull();
+            eventsIterator.Events.Count().Should().BePositive();
         }
     }
 }

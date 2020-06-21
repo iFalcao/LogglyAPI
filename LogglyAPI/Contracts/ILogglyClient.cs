@@ -14,7 +14,7 @@ namespace LogglyAPI.Contracts
         /// <param name="from">Defaults to 24h ago</param>
         /// <param name="until">Defaults to now</param>
         /// <param name="order">Order results either as DESC or ASC. Defaults to: DESC</param>
-        /// <param name="size">Amount of logs returned. Defaults to: 50</param>
+        /// <param name="pageSize">Amount of logs returned. Defaults to: 50</param>
         /// <returns>The search object with a RSID that can be used on the Event's endpoint</returns>
         /// <exception cref="RateLimitException">You've reached the API requests limit</exception>
         /// <exception cref="TimeoutException">Loggly couldn't handle the request in time, you need to retry the search</exception>
@@ -23,7 +23,7 @@ namespace LogglyAPI.Contracts
             DateParameter from = null,
             DateParameter until = null,
             SearchOrder? order = SearchOrder.DESC,
-            int? size = 50);
+            int? pageSize = 50);
 
         /// <summary>
         /// Retrieve the event result object from a specified rsid.
@@ -41,5 +41,21 @@ namespace LogglyAPI.Contracts
         /// <param name="page">The page number. Defaults to 0</param>
         /// <returns>List of converted events</returns>
         Task<IEnumerable<T>> GetRawEventsByRsid<T>(long rsidId, int page = 0);
+
+        /// <summary>
+        /// Make a query to the events iterator endpoint
+        /// </summary>
+        /// <param name="queryString">query that will be applied to the Loggly API, follows: https://documentation.solarwinds.com/en/Success_Center/loggly/Content/admin/search-query-language.htm</param></param>
+        /// <param name="from">Defaults to 24h ago</param>
+        /// <param name="until">Defaults to now</param>
+        /// <param name="order">Order results either as DESC or ASC. Defaults to: DESC</param>
+        /// <param name="pageSize">Amount of logs returned. Defaults to: 50</param>
+        /// <returns></returns>
+        Task<EventsIteratorResult> GetEventsIterator(
+            string queryString,
+            DateParameter from = null,
+            DateParameter until = null,
+            SearchOrder? order = SearchOrder.DESC,
+            int? pageSize = 50);
     }
 }

@@ -15,7 +15,7 @@ namespace LogglyAPI.Helpers
         public string Query { get; private set; }
 
 
-        public DateParameter FromTimeInterval(TimeInterval interval, int timeValue)
+        public static DateParameter FromTimeInterval(TimeInterval interval, int timeValue)
         {
             var absoluteValue = Math.Abs(timeValue);
             return new DateParameter($"-{absoluteValue}{(char)interval}");

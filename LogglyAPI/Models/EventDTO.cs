@@ -17,6 +17,15 @@ namespace LogglyAPI.Models
         public IEnumerable<EventDTO> Events { get; set; }
     }
 
+    public class EventsIteratorResult
+    {
+        [JsonProperty("next")]
+        public string NextPageUrl { get; set; }
+
+        [JsonProperty("events")]
+        public IEnumerable<EventDTO> Events { get; set; }
+    }
+
     public class EventDTO
     {
         [JsonProperty("id")]
@@ -37,5 +46,11 @@ namespace LogglyAPI.Models
 
         [JsonProperty("event")]
         public object ParsedObject { get; set; }
+
+        [JsonProperty("raw")]
+        public string Raw { get; set; }
+
+        [JsonProperty("unparsed", NullValueHandling = NullValueHandling.Ignore)]
+        public object Unparsed { get; set; }
     }
 }

@@ -12,8 +12,8 @@ namespace LogglyAPI.Tests
         [Fact]
         public async void GetEventsReturnsPopulatedObject()
         {
-            var searchResult = await _logglyClient.Search("*");
-            var eventsResult = await _logglyClient.GetEventsByRsid(searchResult.RSID.Id);
+            var searchResult = await this._logglyClient.Search("*");
+            var eventsResult = await this._logglyClient.GetEventsByRsid(searchResult.RSID.Id);
 
             eventsResult.Should().NotBeNull();
             eventsResult.TotalEvents.Should().BePositive();
@@ -24,8 +24,8 @@ namespace LogglyAPI.Tests
         [Fact]
         public async void GetRawEventsReturnPopulatedObjectList()
         {
-            var searchResult = await _logglyClient.Search("*");
-            var eventsResult = await _logglyClient.GetRawEventsByRsid<object>(searchResult.RSID.Id);
+            var searchResult = await this._logglyClient.Search("*");
+            var eventsResult = await this._logglyClient.GetRawEventsByRsid<object>(searchResult.RSID.Id);
 
             eventsResult.Should().NotBeNull();
             eventsResult.Count().Should().Be(50);
@@ -36,7 +36,7 @@ namespace LogglyAPI.Tests
         {
             Func<Task> getEventsIteratorAction = async () =>
             {
-                await _logglyClient.GetEventsIterator(
+                await this._logglyClient.GetEventsIterator(
                     "*",
                     from: DateParameter.FromTimeInterval(TimeInterval.Minutes, 5),
                     until: DateParameter.DEFAULT_UNTIL,
@@ -49,7 +49,7 @@ namespace LogglyAPI.Tests
         [Fact]
         public async void EventsIteratorReturnsPopulatedObjectWithoutNextPageUrl()
         {
-            var eventsIterator = await _logglyClient.GetEventsIterator(
+            var eventsIterator = await this._logglyClient.GetEventsIterator(
                 "*",
                 from: DateParameter.FromTimeInterval(TimeInterval.Minutes, 2),
                 until: DateParameter.DEFAULT_UNTIL,
@@ -63,7 +63,7 @@ namespace LogglyAPI.Tests
         [Fact]
         public async void EventsIteratorReturnsPopulatedObject()
         {
-            var eventsIterator = await _logglyClient.GetEventsIterator(
+            var eventsIterator = await this._logglyClient.GetEventsIterator(
                 "*",
                 from: DateParameter.FromTimeInterval(TimeInterval.Days, 2),
                 until: DateParameter.DEFAULT_UNTIL,

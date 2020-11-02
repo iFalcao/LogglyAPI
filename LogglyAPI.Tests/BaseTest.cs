@@ -14,13 +14,13 @@ namespace LogglyAPI.Tests
 
         protected BaseTest()
         {
-            _logglyConfig = ReadConfigFromFile();
-            _logglyClient = new LogglyClient(_logglyConfig);
+            this._logglyConfig = this.ReadConfigFromFile();
+            this._logglyClient = new LogglyClient(this._logglyConfig);
         }
 
         protected LogglyConfig ReadConfigFromFile()
         {
-            var currentAssembly = GetType().GetTypeInfo().Assembly.Location;
+            var currentAssembly = this.GetType().GetTypeInfo().Assembly.Location;
             var assemblyDirectory = Path.GetDirectoryName(currentAssembly);
             var fileName = Path.Combine(assemblyDirectory, @"Files\config.json");
             var json = File.ReadAllText(fileName);

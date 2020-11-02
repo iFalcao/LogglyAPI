@@ -20,9 +20,9 @@ namespace LogglyAPI.Services
 
         public LogglyClient(LogglyConfig config)
         {
-            _config = config;
+            this._config = config;
 
-            BaseUrl = $"https://{_config.Account}.loggly.com/apiv2";
+            this.BaseUrl = $"https://{this._config.Account}.loggly.com/apiv2";
         }
 
         public async Task<SearchResult> Search(
@@ -34,12 +34,12 @@ namespace LogglyAPI.Services
         {
             from = from ?? DateParameter.DEFAULT_FROM;
             until = until ?? DateParameter.DEFAULT_UNTIL;
-            var requestParameters = GenerateRequestParameters(queryString, from.Query, until.Query, order.Value, pageSize.Value);
+            var requestParameters = this.GenerateRequestParameters(queryString, from.Query, until.Query, order.Value, pageSize.Value);
             var requestUrl = this.BaseUrl + $"/search{requestParameters}";
 
             try
             {
-                using (var webClient = GetConfiguredWebClient())
+                using (var webClient = this.GetConfiguredWebClient())
                 {
                     var json = await webClient.DownloadStringTaskAsync(requestUrl);
                     var searchResult = JsonConvert.DeserializeObject<SearchResult>(json);
@@ -51,9 +51,14 @@ namespace LogglyAPI.Services
                 var statusCode = (webException.Response as HttpWebResponse).StatusCode;
 
                 if (statusCode == HttpStatusCode.ServiceUnavailable)
+                {
                     throw new RateLimitException();
+                }
+
                 if (statusCode == HttpStatusCode.InternalServerError || statusCode == HttpStatusCode.GatewayTimeout)
+                {
                     throw new TimeoutException();
+                }
 
                 throw;
             }
@@ -61,9 +66,9 @@ namespace LogglyAPI.Services
 
         public async Task<IEnumerable<T>> GetRawEventsByRsid<T>(long rsidId, int page = 0)
         {
-            var requestUrl = BaseUrl + $"/events?rsid={rsidId}&page={page}&format=raw";
+            var requestUrl = this.BaseUrl + $"/events?rsid={rsidId}&page={page}&format=raw";
 
-            using (var webClient = GetConfiguredWebClient())
+            using (var webClient = this.GetConfiguredWebClient())
             {
                 var rawText = await webClient.DownloadStringTaskAsync(requestUrl);
                 var json = this.FixRawEventsText(rawText);
@@ -74,9 +79,9 @@ namespace LogglyAPI.Services
 
         public async Task<EventsResult> GetEventsByRsid(long rsidId, int page = 0)
         {
-            var requestUrl = BaseUrl + $"/events?rsid={rsidId}&page={page}";
+            var requestUrl = this.BaseUrl + $"/events?rsid={rsidId}&page={page}";
 
-            using (var webClient = GetConfiguredWebClient())
+            using (var webClient = this.GetConfiguredWebClient())
             {
                 var json = await webClient.DownloadStringTaskAsync(requestUrl);
                 var eventsResult = JsonConvert.DeserializeObject<EventsResult>(json);
@@ -92,12 +97,14 @@ namespace LogglyAPI.Services
             int? pageSize = 50)
         {
             if (pageSize > 1000)
+            {
                 throw new ArgumentException("Page size must be less than 1000");
+            }
 
-            var requestParameters = GenerateRequestParameters(queryString, from.Query, until.Query, order.Value, pageSize.Value);
+            var requestParameters = this.GenerateRequestParameters(queryString, from.Query, until.Query, order.Value, pageSize.Value);
             var requestUrl = this.BaseUrl + $"/events/iterate{requestParameters}";
 
-            using (var webClient = GetConfiguredWebClient())
+            using (var webClient = this.GetConfiguredWebClient())
             {
                 var json = await webClient.DownloadStringTaskAsync(requestUrl);
                 var eventsIteratorResult = JsonConvert.DeserializeObject<EventsIteratorResult>(json);
@@ -132,7 +139,7 @@ namespace LogglyAPI.Services
         private WebClient GetConfiguredWebClient()
         {
             var webClient = new WebClient();
-            var authString = $"{_config.Username}:{_config.Password}";
+            var authString = $"{this._config.Username}:{this._config.Password}";
             authString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authString));
             webClient.Headers.Add("Authorization", $"Basic {authString}");
             return webClient;

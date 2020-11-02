@@ -8,7 +8,7 @@ namespace LogglyAPI.Tests
         [Fact]
         public async void SearchMessagesReturnsPopulatedObject()
         {
-            var response = await _logglyClient.Search("*");
+            var response = await this._logglyClient.Search("*");
 
             response.Should().NotBeNull();
             response.RSID.Id.Should().BePositive();
